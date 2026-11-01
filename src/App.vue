@@ -1,5 +1,5 @@
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import PokemonCard from './components/pokemon_Card.vue'
 
@@ -9,7 +9,7 @@ const error = ref('')
 
 // Obtener 40 ids aleatorios sin repetir
 function obtenerIdsAleatorios() {
-  const ids = new Set<number>()
+  const ids = new Set()
 
   while (ids.size < 40) {
     ids.add(Math.floor(Math.random() * 1025) + 1)
@@ -18,7 +18,8 @@ function obtenerIdsAleatorios() {
   return Array.from(ids)
 }
 
-async function obtenerPokemon(id: number) {
+// Obtener información de un Pokémon
+async function obtenerPokemon(id) {
   const respuesta = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
 
   if (!respuesta.ok) {
@@ -33,10 +34,10 @@ async function obtenerPokemon(id: number) {
     height: datos.height / 10,
     weight: datos.weight / 10,
     experience: datos.base_experience ?? 'No disponible',
-    types: datos.types.map((tipo: any) => tipo.type.name),
+    types: datos.types.map(tipo => tipo.type.name),
     abilities: datos.abilities
       .slice(0, 2)
-      .map((habilidad: any) => habilidad.ability.name),
+      .map(habilidad => habilidad.ability.name),
     image: datos.sprites.other['official-artwork'].front_default
       || datos.sprites.front_default
   }
@@ -72,7 +73,7 @@ onMounted(() => {
   <main>
     <header class="encabezado">
       <h1>POKÉMON DECK</h1>
-      <p>¡Colecciona tus 40 Pokémon aleatorios!</p>
+      <p>¡40 Pokémons aleatorios!</p>
 
       <button @click="cargarPokemones">
         Generar otro deck
@@ -142,10 +143,13 @@ button:hover {
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, minmax(250px, 1fr));
   gap: 25px;
-  padding: 25px;
-  justify-items: center;
+  width: 100%;
+  max-width: 1400px;
+  margin: 30px auto;
+  padding: 20px;
+  justify-items: stretch;
 }
 
 .mensaje {
@@ -153,18 +157,6 @@ button:hover {
   color: white;
   padding: 50px;
   font-size: 20px;
-}
-
-.pokemon-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(250px, 1fr));
-  gap: 25px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 30px auto;
-  padding: 20px;
-  box-sizing: border-box;
-  justify-items: stretch;
 }
 
 @media (max-width: 1150px) {
@@ -184,5 +176,4 @@ button:hover {
     grid-template-columns: 1fr;
   }
 }
-
 </style>

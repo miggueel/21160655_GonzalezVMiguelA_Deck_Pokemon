@@ -1,5 +1,4 @@
-
-<script setup lang="ts">
+<script setup>
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
@@ -7,11 +6,11 @@ const props = defineProps({
 })
 
 const nombre = ref('')
-const tipos = ref<string[]>([])
-const habilidades = ref<string[]>([])
+const tipos = ref([])
+const habilidades = ref([])
 const cargando = ref(true)
 
-const colores: Record<string, string> = {
+const colores = {
   normal: '#C6C6A7', fire: '#F08030', water: '#6890F0',
   electric: '#F8D030', grass: '#78C850', ice: '#98D8D8',
   fighting: '#C03028', poison: '#A040A0', ground: '#E0C068',
@@ -20,7 +19,7 @@ const colores: Record<string, string> = {
   dark: '#705848', steel: '#B8B8D0', fairy: '#EE99AC'
 }
 
-const nombresTipos: Record<string, string> = {
+const nombresTipos = {
   normal: 'Normal', fire: 'Fuego', water: 'Agua',
   electric: 'Eléctrico', grass: 'Planta', ice: 'Hielo',
   fighting: 'Lucha', poison: 'Veneno', ground: 'Tierra',
@@ -33,6 +32,7 @@ const fondoCarta = computed(() => {
   const t = props.pokemon.types || []
   const c1 = colores[t[0]] || '#C6C6A7'
   const c2 = colores[t[1]] || c1
+
   return t.length > 1
     ? `linear-gradient(135deg, ${c1}, ${c2})`
     : c1
@@ -44,33 +44,39 @@ async function traducir() {
   try {
     const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${props.pokemon.id}`)
     if (!r.ok) throw new Error('Error al consultar Pokémon')
+
     const p = await r.json()
 
     const especie = await (await fetch(p.species.url)).json()
+
     nombre.value = especie.names.find(
-      (n: any) => n.language.name === 'es'
+      n => n.language.name === 'es'
     )?.name || p.name
 
-    tipos.value = await Promise.all(p.types.map(async (t: any) => {
+    tipos.value = await Promise.all(p.types.map(async t => {
       const info = await (await fetch(t.type.url)).json()
+
       return info.names.find(
-        (n: any) => n.language.name === 'es'
+        n => n.language.name === 'es'
       )?.name || nombresTipos[t.type.name] || t.type.name
     }))
 
     habilidades.value = await Promise.all(
-      p.abilities.slice(0, 2).map(async (a: any) => {
+      p.abilities.slice(0, 2).map(async a => {
         const info = await (await fetch(a.ability.url)).json()
+
         return info.names.find(
-          (n: any) => n.language.name === 'es'
+          n => n.language.name === 'es'
         )?.name || a.ability.name
       })
     )
+
   } catch (error) {
     console.error(error)
     nombre.value = props.pokemon.name
     tipos.value = props.pokemon.types || []
     habilidades.value = props.pokemon.abilities || []
+
   } finally {
     cargando.value = false
   }
